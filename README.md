@@ -10,7 +10,7 @@ A portfolio-grade, constrained analytics agent that turns natural-language quest
 
 | Analysis workspace | Validation and audit |
 |---|---|
-| _Add `docs/screenshots/analysis.png`_ | _Add `docs/screenshots/audit.png`_ |
+| ![Analysis workspace showing a natural-language question and verified hospital encounter results](docs/screenshots/analysis.png) | ![Validation and audit trace showing successful bounded workflow steps](docs/screenshots/audit.png) |
 
 ## Why this exists
 
