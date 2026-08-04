@@ -28,6 +28,141 @@ Text-to-SQL demos often give a model excessive authority and trust plausible-loo
 - FastAPI/OpenAPI, polished Streamlit UI, JSON audit trail, benchmarks, pytest, Docker Compose, and CI
 - 20 annotated reference queries covering joins, CTEs, subqueries, date logic, views, indexes, and windows
 
+## What the safety-focused description means in plain English
+
+The project description says that it uses a **bounded AI workflow with structured planning, SQLGlot validation, privacy controls, approved statistical tools, deterministic result checks, evidence-grounded answers, and complete audit trails**. Put simply, the AI is allowed to suggest an analysis, but it is not trusted with unrestricted control. Ordinary application code decides what is safe to run, checks the results, limits what may be shown, and records what happened.
+
+### Bounded AI workflow
+
+“Bounded” means the AI operates inside a fixed process with clear limits. It can interpret a question and propose how to answer it, but it cannot connect directly to the database, change the database, run arbitrary programs, or retry forever.
+
+For example, the workflow follows steps such as:
+
+1. Understand the user's question.
+2. Decide whether the question is clear and safe.
+3. Create a structured analysis plan.
+4. Propose SQL.
+5. Validate the SQL with ordinary code.
+6. Inspect the database query plan.
+7. Execute the query through a read-only connection.
+8. Check and suppress the returned results where necessary.
+9. Optionally run one approved statistical function.
+10. Produce an answer based only on verified evidence.
+11. Save an audit record.
+
+If the question is unclear—such as “Which hospital is worst?”—the application asks what “worst” means. If a request is unsafe, such as asking for patient-level exports, it is denied. If validation fails, execution stops safely.
+
+### Structured planning
+
+The AI cannot jump directly from a user's question to database execution. It must first complete a structured analysis plan that identifies items such as:
+
+- the metric being requested;
+- the population or cohort to analyze;
+- inclusion and exclusion rules;
+- the date range;
+- grouping and comparison fields;
+- the required database tables;
+- the minimum acceptable group size;
+- whether a statistical test is needed; and
+- whether the question is ambiguous or presents a privacy risk.
+
+Pydantic checks that this plan has the required fields and valid data types. This is similar to requiring someone to complete a standardized request form before they are allowed to submit a database query.
+
+### SQLGlot validation
+
+SQLGlot turns proposed SQL into a structured syntax tree so the application can inspect what the query actually does. This is safer than searching the SQL text for suspicious words because the validator can identify the statement type, tables, columns, functions, and joins.
+
+The validator rejects, among other things:
+
+- attempts to insert, update, or delete data;
+- attempts to create, alter, replace, or drop database objects;
+- multiple SQL statements hidden in one request;
+- access to SQLite system tables or administrative commands;
+- tables or columns that do not exist in the approved schema;
+- functions that are not on the allowlist;
+- joins without meaningful matching conditions; and
+- queries that exceed configured complexity or result-size limits.
+
+Even SQL that passes these checks is executed through a separate read-only database connection. The SQL validator and database permissions therefore provide two independent layers of protection.
+
+### Privacy controls
+
+The application is designed to return summarized information rather than individual records. Although the included data is synthetic, the project models privacy practices that would matter when working with healthcare information.
+
+- Aggregate counts, rates, and trends are the default.
+- Patient-level output and unrestricted exports are denied.
+- Requests involving sensitive demographic combinations are flagged.
+- Groups with fewer than 10 observations are suppressed.
+- Only a small, verified result sample is provided as context for follow-up questions.
+- API keys and direct identifiers are not written to audit logs.
+
+For example, the application may report a hospital's complication rate when enough eligible cases exist, but it will not provide a list of the patients behind that rate.
+
+### Approved statistical tools
+
+The AI cannot write and execute arbitrary Python. It may only select a statistical operation from a predefined registry of reviewed functions, including:
+
+- proportion confidence intervals;
+- chi-square tests;
+- Fisher exact tests;
+- independent-samples t-tests;
+- Mann–Whitney U tests;
+- one-way ANOVA; and
+- Pearson or Spearman correlations.
+
+These functions check their inputs, sample sizes, missing values, and assumptions before running. They return structured results and warnings. The AI chooses from the available tools, but the application—not the AI—owns and executes the underlying Python implementation.
+
+### Deterministic result checks
+
+“Deterministic” means the same input is checked using explicit programming rules rather than model judgment. After a SQL query runs, ordinary Python code verifies conditions such as:
+
+- denominators must be positive;
+- counts cannot be negative;
+- a numerator cannot exceed its denominator;
+- rates must remain between 0 and 1;
+- percentages must remain between 0 and 100;
+- empty results must be reported clearly;
+- suspicious values should produce warnings; and
+- small groups must remain suppressed.
+
+Important arithmetic is calculated from verified database values. The application does not ask the language model to perform or guess the final calculations.
+
+### Evidence-grounded answers
+
+The final answer is limited to information found in the validated plan, executed SQL, verified result table, approved statistical output, and recorded warnings. Names, categories, sample sizes, percentages, rankings, and comparisons must come from that evidence.
+
+If the query returns no evidence—or if the evidence does not support a conclusion—the application should say so. It should not fill gaps with plausible-sounding medical or operational claims.
+
+### Complete audit trails
+
+Every analysis receives a unique run ID. The audit record stores information needed to reconstruct how the answer was produced, including:
+
+- the original and normalized question;
+- the selected model and schema version;
+- the structured analysis plan;
+- the generated and validated SQL;
+- validation and execution status;
+- execution time and returned row count;
+- approved statistical tools used;
+- warnings and limitations;
+- the final grounded answer; and
+- the creation timestamp.
+
+Secrets such as OpenAI API keys are deliberately excluded. The audit trail makes the system easier to debug, test, explain, and review without exposing credentials.
+
+### The division of responsibility
+
+| The AI may | Deterministic application code must |
+|---|---|
+| Interpret the user's wording | Classify privacy risk and enforce policy |
+| Identify ambiguity | Validate the structured plan |
+| Select a registered metric | Control the metric definitions |
+| Propose one SQL query | Parse, allowlist, limit, and approve the SQL |
+| Request an approved statistical tool | Validate inputs and execute the fixed function |
+| Draft an interpretation | Check values and ground claims in verified evidence |
+
+The central idea is straightforward: **the AI proposes; deterministic software verifies and controls**.
+
 ## Architecture
 
 ```mermaid
