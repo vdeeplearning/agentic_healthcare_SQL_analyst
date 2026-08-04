@@ -1,0 +1,2 @@
+-- Question: Find each patient's most recent encounter. Shape: patient, encounter, date. Assumption: ties use encounter_id. Concepts: ROW_NUMBER, CTE.
+WITH ranked AS (SELECT patient_id,encounter_id,admission_date,ROW_NUMBER() OVER(PARTITION BY patient_id ORDER BY admission_date DESC,encounter_id DESC) rn FROM encounters) SELECT patient_id,encounter_id,admission_date FROM ranked WHERE rn=1 LIMIT 100;

@@ -1,0 +1,2 @@
+-- Question: Which hospitals improved from the prior quarter? Shape: hospital, period, rate, prior, change. Assumption: lower is better. Concepts: LAG, CTE.
+WITH q AS (SELECT h.hospital_name,qm.measurement_period_start,qm.measure_value,LAG(qm.measure_value) OVER(PARTITION BY qm.hospital_id ORDER BY qm.measurement_period_start) prior_rate FROM quality_measures qm JOIN hospitals h ON h.hospital_id=qm.hospital_id WHERE qm.measure_name='30-day readmission rate') SELECT *,measure_value-prior_rate change FROM q WHERE prior_rate IS NOT NULL ORDER BY change;

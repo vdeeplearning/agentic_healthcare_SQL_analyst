@@ -1,0 +1,2 @@
+-- Question: Three-quarter rolling hospital readmission rate. Shape: hospital, period, rolling_rate. Assumption: stored quarterly metric. Concepts: window frame, rolling average.
+SELECT hospital_id,measurement_period_start,AVG(measure_value) OVER(PARTITION BY hospital_id ORDER BY measurement_period_start ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) rolling_rate FROM quality_measures WHERE measure_name='30-day readmission rate';

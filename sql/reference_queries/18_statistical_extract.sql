@@ -1,0 +1,2 @@
+-- Question: Extract urban/rural readmission contingency counts. Shape: location, readmitted, not_readmitted. Assumption: assessment eligible. Concepts: statistical extraction, CASE.
+SELECT h.urban_rural,SUM(r.readmitted_within_30_days) readmitted,SUM(CASE WHEN r.readmitted_within_30_days=0 THEN 1 ELSE 0 END) not_readmitted FROM readmissions r JOIN encounters e ON e.encounter_id=r.index_encounter_id JOIN hospitals h ON h.hospital_id=e.hospital_id GROUP BY h.urban_rural;

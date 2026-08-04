@@ -1,0 +1,2 @@
+-- Question: What percent of emergency encounters led to non-home disposition? Shape: numerator, denominator, rate. Assumption: disposition proxy. Concepts: CASE, aggregate.
+SELECT SUM(CASE WHEN discharge_disposition<>'home' THEN 1 ELSE 0 END) numerator,COUNT(*) denominator,1.0*SUM(CASE WHEN discharge_disposition<>'home' THEN 1 ELSE 0 END)/COUNT(*) rate FROM encounters WHERE encounter_type='emergency' AND discharge_disposition IS NOT NULL;

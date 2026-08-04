@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    volumes: ["clinical-data:/app/data/generated"]
+    healthcheck: {test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"], interval: 15s, timeout: 5s, retries: 5}
+  ui:
+    build: .
+    command: ["streamlit","run","app.py","--server.address=0.0.0.0"]
+    ports: ["8501:8501"]
+    volumes: ["clinical-data:/app/data/generated"]
+    depends_on: [api]
+volumes: {clinical-data: {}}
+
