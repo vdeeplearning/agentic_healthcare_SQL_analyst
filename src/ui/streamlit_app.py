@@ -30,7 +30,7 @@ with st.sidebar:
     ).strip()
     if api_key:
         st.success("API-backed planning enabled for non-demo questions")
-        if st.button("Clear API key", use_container_width=True):
+        if st.button("Clear API key", width="stretch"):
             st.session_state["openai_api_key"] = ""
             st.rerun()
     else:
@@ -53,7 +53,7 @@ if history:
             st.markdown(f"**Analyst:** {turn['answer']}")
 with st.expander("Example questions"):
     for example in EXAMPLES: st.code(example,language=None)
-if st.button("Analyze",type="primary",use_container_width=True):
+if st.button("Analyze",type="primary",width="stretch"):
     context=[{
         "question":turn["question"],
         "grounded_answer":turn["answer"],
@@ -71,15 +71,15 @@ if result:
     elif result.status=="denied": st.error(result.answer)
     else: st.success(result.answer)
     if result.rows:
-        frame=pd.DataFrame(result.rows); st.dataframe(frame,use_container_width=True,hide_index=True)
+        frame=pd.DataFrame(result.rows); st.dataframe(frame,width="stretch",hide_index=True)
         numeric=[c for c in frame.columns if pd.api.types.is_numeric_dtype(frame[c])]
         labels=[c for c in frame.columns if c not in numeric]
-        if labels and numeric: st.plotly_chart(px.bar(frame.head(20),x=labels[0],y=numeric[-1]),use_container_width=True)
+        if labels and numeric: st.plotly_chart(px.bar(frame.head(20),x=labels[0],y=numeric[-1]),width="stretch")
     tabs=st.tabs(["Metric","SQL","Validation","Audit trace","Provenance"])
     with tabs[0]: st.json(result.metric_definition or {})
     with tabs[1]: st.code(result.sql or "No SQL generated",language="sql")
     with tabs[2]: st.json(result.validation.model_dump() if result.validation else {}); [st.warning(w) for w in result.warnings]
-    with tabs[3]: st.dataframe(pd.DataFrame([e.model_dump() for e in result.trace]),hide_index=True,use_container_width=True); st.caption(f"Audit run ID: {result.run_id}")
+    with tabs[3]: st.dataframe(pd.DataFrame([e.model_dump() for e in result.trace]),hide_index=True,width="stretch"); st.caption(f"Audit run ID: {result.run_id}")
     with tabs[4]: st.json(result.provenance)
 guide_tab,schema_tab,registry_tab=st.tabs(["Dataset Guide","Schema Explorer","Metric Registry"])
 with guide_tab:
