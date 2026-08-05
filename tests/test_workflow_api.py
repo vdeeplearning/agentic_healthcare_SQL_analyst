@@ -1,9 +1,12 @@
 from fastapi.testclient import TestClient
+from pathlib import Path
 from streamlit.testing.v1 import AppTest
 from src.agent.schemas import AnalysisPlan
 from src.agent.live_planner import LiveProposal
 from src.agent.workflow import Analyst
 from src.api.main import app
+
+APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
 
 def test_plan_requires_clarification():
     try: AnalysisPlan(normalized_question="x",analysis_intent="x",ambiguity_detected=True); assert False
@@ -83,14 +86,14 @@ def test_validate_endpoint(): assert "valid" in TestClient(app).post("/validate-
 
 def test_streamlit_page_survives_analyze_rerun():
     """Regression: importing a cached UI module made the page blank on rerun."""
-    page=AppTest.from_file("app.py",default_timeout=30).run()
+    page=AppTest.from_file(APP_PATH,default_timeout=30).run()
     assert len(page.title)==1 and not page.exception
     analyze=next(button for button in page.button if button.label=="Analyze")
     analyze.click(); page.run()
     assert len(page.title)==1 and not page.exception
     assert any("normalized relational design" in message.value.lower() for message in page.success)
 def test_streamlit_dataset_guide_is_visible():
-    page=AppTest.from_file("app.py",default_timeout=30).run()
+    page=AppTest.from_file(APP_PATH,default_timeout=30).run()
     assert not page.exception
     assert any("What this synthetic dataset contains" in heading.value for heading in page.subheader)
     assert any("Core relationships" in markdown.value for markdown in page.markdown)
