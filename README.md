@@ -176,12 +176,36 @@ flowchart LR
 
 ```mermaid
 flowchart TD
- N["Normalize"] --> C["Classify risk/intent"]
- C -->|ambiguous| CL["Clarify and stop"]
- C -->|high risk| D["Deny and stop"]
- C --> P["Create typed plan"] --> PV["Validate plan"] --> SQL["Generate candidate SQL"]
- SQL --> SV["AST/schema/join validation"] --> EP["Inspect query plan"] --> EX["Read-only execution"]
- EX --> RV["Validate/suppress results"] --> ST["Optional approved tool"] --> GA["Compose grounded answer"] --> FV["Faithfulness check"] --> AU["Audit"]
+ N["Normalize question"]
+ C{"Classify risk and intent"}
+ CL["Ask for clarification and stop"]
+ D["Deny unsafe request and stop"]
+ P["Create typed analysis plan"]
+ PV["Validate analysis plan"]
+ QG["Generate SQL candidate"]
+ SV["Validate AST, schema, and joins"]
+ EP["Inspect query plan"]
+ EX["Execute through read-only connection"]
+ RV["Validate and suppress results"]
+ ST["Run optional approved statistic"]
+ GA["Compose grounded answer"]
+ FV["Check answer faithfulness"]
+ AU["Write audit record"]
+
+ N --> C
+ C -- "Ambiguous" --> CL
+ C -- "High risk" --> D
+ C -- "Safe and clear" --> P
+ P --> PV
+ PV --> QG
+ QG --> SV
+ SV --> EP
+ EP --> EX
+ EX --> RV
+ RV --> ST
+ ST --> GA
+ GA --> FV
+ FV --> AU
 ```
 
 ```mermaid
