@@ -167,11 +167,26 @@ The central idea is straightforward: **the AI proposes; deterministic software v
 
 ```mermaid
 flowchart LR
- U["User / Streamlit"] --> API["FastAPI"] --> G["Bounded agent workflow"]
- G --> P["Pydantic analysis plan"] --> V["SQLGlot + policy validators"]
- V --> Q["EXPLAIN + read-only SQLite"] --> R["Result + privacy validators"]
- R --> S["Approved statistics"] --> A["Grounded answer validator"]
- G --> L["Audit log"]
+ U["User and Streamlit interface"]
+ API["FastAPI service"]
+ G["Bounded agent workflow"]
+ P["Pydantic analysis plan"]
+ V["SQLGlot and policy validators"]
+ Q["Query-plan review and read-only SQLite"]
+ R["Result and privacy validators"]
+ S["Approved statistical tools"]
+ A["Grounded answer validator"]
+ L["Audit log"]
+
+ U --> API
+ API --> G
+ G --> P
+ P --> V
+ V --> Q
+ Q --> R
+ R --> S
+ S --> A
+ G --> L
 ```
 
 ```mermaid
